@@ -13,6 +13,11 @@ import java.util.List;
 import java.util.Map;
 
 public class CsvExporter {
+
+    private CsvExporter() {
+        // private constructor to prevent instantiation
+    }
+
     public static void exportOrders(List<Product> products, List<Order> orders, String path) {
         Map<Integer, Product> productsById = new HashMap<>();
         for (Product p : products) {
