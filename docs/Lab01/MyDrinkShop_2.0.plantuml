@@ -1,0 +1,115 @@
+@startuml
+!theme plain
+top to bottom direction
+skinparam linetype ortho
+
+package domain {
+  class Product
+  class Order
+  class OrderItem
+  class Reteta
+  class IngredientReteta
+  class Stoc
+  class User
+  enum Role << enumeration >>
+  enum CategorieBautura << enumeration >>
+  enum TipBautura << enumeration >>
+}
+
+package repository {
+  interface Repository<ID, E> << interface >>
+  class AbstractRepository<ID, E>
+  class FileAbstractRepository<ID, E>
+  class FileProductRepository
+  class FileOrderRepository
+  class FileRetetaRepository
+  class FileStocRepository
+  class FileUserRepository
+}
+
+package validator {
+  interface Validator<T> << interface >>
+  class ProductValidator
+  class OrderValidator
+  class OrderItemValidator
+  class RetetaValidator
+  class StocValidator
+}
+
+package exception {
+  class ValidationException
+  class RepositoryException
+}
+
+package utils {
+  class CsvExporter
+  class ReceiptGenerator
+}
+
+package service {
+  class DrinkShopService
+  class ProductService
+  class OrderService
+  class RetetaService
+  class StocService
+  class DailyReportService
+  class AuthService
+}
+
+package controller {
+  class DrinkShopApp
+  class DrinkShopController
+}
+
+' Inheritance & Realization
+AbstractRepository      -[#008200,dashed]-^  Repository
+FileAbstractRepository  -[#000082,plain]-^  AbstractRepository
+FileOrderRepository     -[#000082,plain]-^  FileAbstractRepository
+FileProductRepository   -[#000082,plain]-^  FileAbstractRepository
+FileRetetaRepository    -[#000082,plain]-^  FileAbstractRepository
+FileStocRepository      -[#000082,plain]-^  FileAbstractRepository
+FileUserRepository      -[#000082,plain]-^  FileAbstractRepository
+
+ProductValidator        -[#008200,dashed]-^  Validator
+OrderValidator          -[#008200,dashed]-^  Validator
+OrderItemValidator      -[#008200,dashed]-^  Validator
+RetetaValidator         -[#008200,dashed]-^  Validator
+StocValidator           -[#008200,dashed]-^  Validator
+
+' Domain Relationships
+Product                "1" *-[#595959,plain]-> "categorie\n1" CategorieBautura
+Product                "1" *-[#595959,plain]-> "tip\n1" TipBautura
+Order                  "1" *-[#595959,plain]-> "items\n*" OrderItem
+OrderItem              "1" *-[#595959,plain]-> "product\n1" Product
+Reteta                 "1" *-[#595959,plain]-> "ingrediente\n*" IngredientReteta
+User                   "1" *-[#595959,plain]-> "role\n1" Role
+
+' Service & Repository Relationships
+ProductService         "1" *-[#595959,plain]-> "productRepo\n1" Repository
+OrderService           "1" *-[#595959,plain]-> "orderRepo\n1" Repository
+RetetaService          "1" *-[#595959,plain]-> "retetaRepo\n1" Repository
+StocService            "1" *-[#595959,plain]-> "stocRepo\n1" Repository
+AuthService            "1" *-[#595959,plain]-> "userRepo\n1" Repository
+DailyReportService     "1" *-[#595959,plain]-> "repo\n1" Repository
+
+' Service & Utils Relationships (Fix pentru A03)
+OrderService           ..> ReceiptGenerator : uses
+DailyReportService     ..> CsvExporter : uses
+
+' Facade (DrinkShopService) Composition
+DrinkShopService       "1" *-[#595959,plain]-> "productService\n1" ProductService
+DrinkShopService       "1" *-[#595959,plain]-> "orderService\n1" OrderService
+DrinkShopService       "1" *-[#595959,plain]-> "retetaService\n1" RetetaService
+DrinkShopService       "1" *-[#595959,plain]-> "stocService\n1" StocService
+DrinkShopService       "1" *-[#595959,plain]-> "report\n1" DailyReportService
+DrinkShopService       "1" *-[#595959,plain]-> "authService\n1" AuthService
+
+' Controller Relationships (Fix pentru A10 - Controllerul e acum "curat")
+DrinkShopController    "1" *-[#595959,plain]-> "service\n1" DrinkShopService
+DrinkShopApp           ..> DrinkShopController : initializes
+
+' Other internal compositions
+OrderValidator         "1" *-[#595959,plain]-> "itemValidator\n1" OrderItemValidator
+FileOrderRepository    "1" *-[#595959,plain]-> "productRepository\n1" Repository
+
+@enduml
