@@ -29,22 +29,44 @@ public class FileOrderRepository
 
         // Format: id,productId:qty|productId:qty,total
         String[] parts = line.split(",");
+        if (parts.length != 3) {
+            throw new IllegalArgumentException("Linie comanda invalida: " + line);
+        }
 
-        int id = Integer.parseInt(parts[0]);
+        int id;
+        double totalPrice;
+        try {
+            id = Integer.parseInt(parts[0].trim());
+            totalPrice = Double.parseDouble(parts[2].trim());
+        } catch (NumberFormatException ex) {
+            throw new IllegalArgumentException("Date numerice invalide in comanda: " + line, ex);
+        }
 
         List<OrderItem> items = new ArrayList<>();
         String[] products = parts[1].split("\\|");
 
         for (String product : products) {
             String[] prodParts = product.split(":");
+            if (prodParts.length != 2) {
+                throw new IllegalArgumentException("Item comanda invalid: " + product + " in linia: " + line);
+            }
 
-            int productId = Integer.parseInt(prodParts[0]);
-            int quantity = Integer.parseInt(prodParts[1]);
+            int productId;
+            int quantity;
+            try {
+                productId = Integer.parseInt(prodParts[0].trim());
+                quantity = Integer.parseInt(prodParts[1].trim());
+            } catch (NumberFormatException ex) {
+                throw new IllegalArgumentException("Date invalide pentru item: " + product + " in linia: " + line, ex);
+            }
 
-            items.add(new OrderItem(productRepository.findOne(productId), quantity));
+            Product foundProduct = productRepository.findOne(productId);
+            if (foundProduct == null) {
+                throw new IllegalArgumentException("Produs inexistent in comanda: productId=" + productId);
+            }
+
+            items.add(new OrderItem(foundProduct, quantity));
         }
-
-        double totalPrice = Double.parseDouble(parts[2]);
 
         return new Order(id, items, totalPrice);
     }

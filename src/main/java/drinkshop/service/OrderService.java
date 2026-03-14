@@ -41,8 +41,25 @@ public class OrderService {
     }
 
     public double computeTotal(Order o) {
+        if (o == null || o.getItems() == null) {
+            return 0.0;
+        }
+
         return o.getItems().stream()
-                .mapToDouble(i -> productRepo.findOne(i.getProduct().getId()).getPret() * i.getQuantity())
+                .mapToDouble(i -> {
+                    if (i == null || i.getProduct() == null) {
+                        throw new IllegalArgumentException("Order item invalid: produs lipsa.");
+                    }
+                    if (i.getQuantity() <= 0) {
+                        throw new IllegalArgumentException("Order item invalid: cantitate <= 0.");
+                    }
+
+                    Product product = productRepo.findOne(i.getProduct().getId());
+                    if (product == null) {
+                        throw new IllegalArgumentException("Produs inexistent pentru id=" + i.getProduct().getId());
+                    }
+                    return product.getPret() * i.getQuantity();
+                })
                 .sum();
     }
 

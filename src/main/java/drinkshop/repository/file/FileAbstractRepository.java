@@ -18,13 +18,22 @@ public abstract class FileAbstractRepository<ID, E>
         try (BufferedReader br = new BufferedReader(new FileReader(fileName))) {
 
             String line;
+            int lineNo = 0;
             while ((line = br.readLine()) != null) {
-                E entity = extractEntity(line);
-                super.save(entity);
+                lineNo++;
+                if (line.isBlank()) {
+                    continue;
+                }
+                try {
+                    E entity = extractEntity(line);
+                    super.save(entity);
+                } catch (RuntimeException ex) {
+                    throw new IllegalStateException("Eroare la parsarea fisierului " + fileName + " la linia " + lineNo + ": " + line, ex);
+                }
             }
 
         } catch (IOException e) {
-            e.printStackTrace();
+            throw new IllegalStateException("Nu s-a putut citi fisierul: " + fileName, e);
         }
     }
 
@@ -37,7 +46,7 @@ public abstract class FileAbstractRepository<ID, E>
             }
 
         } catch (IOException e) {
-            e.printStackTrace();
+            throw new IllegalStateException("Nu s-a putut scrie fisierul: " + fileName, e);
         }
     }
 

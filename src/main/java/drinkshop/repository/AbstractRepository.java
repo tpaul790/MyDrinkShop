@@ -5,21 +5,19 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.StreamSupport;
 
-public abstract class AbstractRepository<ID, E>
-        implements Repository<ID, E> {
+public abstract class AbstractRepository<K, E>
+        implements Repository<K, E> {
 
-    protected Map<ID, E> entities = new HashMap<>();
+    protected Map<K, E> entities = new HashMap<>();
 
     @Override
-    public E findOne(ID id) {
+    public E findOne(K id) {
         return entities.get(id);
     }
 
     @Override
     public List<E> findAll() {
-        return (List<E>)StreamSupport.stream(entities.values().spliterator(), false).toList();
-//                    .collect(Collectors.toList());
-        // return (List<E>) entities.values();
+        return StreamSupport.stream(entities.values().spliterator(), false).toList();
     }
 
     @Override
@@ -29,15 +27,14 @@ public abstract class AbstractRepository<ID, E>
     }
 
     @Override
-    public E delete(ID id) {
+    public E delete(K id) {
         return entities.remove(id);
     }
 
     @Override
     public E update(E entity) {
-        entities.put(getId(entity), entity);
-        return entity;
+        return save(entity);
     }
 
-    protected abstract ID getId(E entity);
+    protected abstract K getId(E entity);
 }

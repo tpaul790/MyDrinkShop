@@ -81,7 +81,14 @@ public class DrinkShopService {
 
     // ---------- STOCK + RECIPE ----------
     public void comandaProdus(Product produs) {
+        if (produs == null) {
+            throw new IllegalArgumentException("Produsul nu poate fi null.");
+        }
+
         Reteta reteta = retetaService.findById(produs.getId());
+        if (reteta == null) {
+            throw new IllegalStateException("Nu exista reteta pentru produsul: " + produs.getNume());
+        }
 
         if (!stocService.areSuficient(reteta)) {
             throw new IllegalStateException("Stoc insuficient pentru produsul: " + produs.getNume());

@@ -4,7 +4,7 @@ import java.io.Serializable;
 
 public class OrderItem implements Serializable {
 
-    private Product product;
+    private transient Product product;
     private int quantity;
 
     public OrderItem(Product product, int quantity) {

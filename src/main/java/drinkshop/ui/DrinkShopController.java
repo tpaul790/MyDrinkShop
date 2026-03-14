@@ -23,7 +23,8 @@ public class DrinkShopController {
     @FXML private TableColumn<Product, Double> colProdPrice;
     @FXML private TableColumn<Product, CategorieBautura> colProdCategorie;
     @FXML private TableColumn<Product, TipBautura> colProdTip;
-    @FXML private TextField txtProdName, txtProdPrice;
+    @FXML private TextField txtProdName;
+    @FXML private TextField  txtProdPrice;
     @FXML private ComboBox<CategorieBautura> comboProdCategorie;
     @FXML private ComboBox<TipBautura> comboProdTip;
 
@@ -35,7 +36,8 @@ public class DrinkShopController {
     @FXML private TableView<IngredientReteta> newRetetaTable;
     @FXML private TableColumn<IngredientReteta, String> colNewIngredName;
     @FXML private TableColumn<IngredientReteta, Double> colNewIngredCant;
-    @FXML private TextField txtNewIngredName, txtNewIngredCant;
+    @FXML private TextField txtNewIngredName;
+    @FXML private TextField txtNewIngredCant;
 
     // ---------- ORDER (CURRENT) ----------
     @FXML private TableView<OrderItem> currentOrderTable;
@@ -57,6 +59,7 @@ public class DrinkShopController {
 
     public void setService(DrinkShopService service) {
         this.service = service;
+        this.currentOrder = new Order(getNextOrderId());
         initData();
     }
 
@@ -111,7 +114,7 @@ public class DrinkShopController {
     // ---------- PRODUCT ----------
     @FXML
     private void onAddProduct() {
-        Reteta r=retetaTable.getSelectionModel().getSelectedItem();
+        Reteta r = retetaTable.getSelectionModel().getSelectedItem();
 
         if (r == null) {
             Alert alert = new Alert(Alert.AlertType.INFORMATION);
@@ -119,19 +122,39 @@ public class DrinkShopController {
             alert.setHeaderText("Selectati o reteta pentru care adugati un produs");
             alert.showAndWait();
             return;
-        }else
-        if (service.getAllProducts().stream().filter(p->p.getId()==r.getId()).toList().size()>0) {
+        }
+        if (service.getAllProducts().stream().anyMatch(p -> p.getId() == r.getId())) {
             Alert alert = new Alert(Alert.AlertType.WARNING);
             alert.setTitle("Error");
             alert.setHeaderText("Exista un produs cu reteta adaugata.");
             alert.showAndWait();
             return;
         }
-        Product p = new Product(r.getId(),
-                txtProdName.getText(),
-                Double.parseDouble(txtProdPrice.getText()),
+
+        if (txtProdName.getText() == null || txtProdName.getText().isBlank()) {
+            showError("Numele produsului este obligatoriu.");
+            return;
+        }
+        if (comboProdCategorie.getValue() == null || comboProdTip.getValue() == null) {
+            showError("Categoria si tipul produsului sunt obligatorii.");
+            return;
+        }
+
+        final double price;
+        try {
+            price = Double.parseDouble(txtProdPrice.getText().trim());
+        } catch (NumberFormatException ex) {
+            showError("Pret invalid. Introdu un numar valid.");
+            return;
+        }
+
+        Product p = new Product(
+                r.getId(),
+                txtProdName.getText().trim(),
+                price,
                 comboProdCategorie.getValue(),
-                comboProdTip.getValue());
+                comboProdTip.getValue()
+        );
         service.addProduct(p);
         initData();
     }
@@ -139,10 +162,35 @@ public class DrinkShopController {
     @FXML
     private void onUpdateProduct() {
         Product selected = productTable.getSelectionModel().getSelectedItem();
-        if (selected == null) return;
-        service.updateProduct(selected.getId(), txtProdName.getText(),
-                Double.parseDouble(txtProdPrice.getText()),
-                comboProdCategorie.getValue(), comboProdTip.getValue());
+        if (selected == null) {
+            showError("Selecteaza produsul pe care vrei sa il actualizezi.");
+            return;
+        }
+
+        if (txtProdName.getText() == null || txtProdName.getText().isBlank()) {
+            showError("Numele produsului este obligatoriu.");
+            return;
+        }
+        if (comboProdCategorie.getValue() == null || comboProdTip.getValue() == null) {
+            showError("Categoria si tipul produsului sunt obligatorii.");
+            return;
+        }
+
+        final double price;
+        try {
+            price = Double.parseDouble(txtProdPrice.getText().trim());
+        } catch (NumberFormatException ex) {
+            showError("Pret invalid. Introdu un numar valid.");
+            return;
+        }
+
+        service.updateProduct(
+                selected.getId(),
+                txtProdName.getText().trim(),
+                price,
+                comboProdCategorie.getValue(),
+                comboProdTip.getValue()
+        );
         initData();
     }
 
@@ -167,8 +215,25 @@ public class DrinkShopController {
     // ---------- RETETA NOUA ----------
     @FXML
     private void onAddNewIngred() {
-        newRetetaList.add(new IngredientReteta(txtNewIngredName.getText(),
-                Double.parseDouble(txtNewIngredCant.getText())));
+        if (txtNewIngredName.getText() == null || txtNewIngredName.getText().isBlank()) {
+            showError("Numele ingredientului este obligatoriu.");
+            return;
+        }
+
+        final double cantitate;
+        try {
+            cantitate = Double.parseDouble(txtNewIngredCant.getText().trim());
+        } catch (NumberFormatException ex) {
+            showError("Cantitate invalida. Introdu un numar valid.");
+            return;
+        }
+
+        if (cantitate <= 0) {
+            showError("Cantitatea trebuie sa fie mai mare decat 0.");
+            return;
+        }
+
+        newRetetaList.add(new IngredientReteta(txtNewIngredName.getText().trim(), cantitate));
     }
 
     @FXML
@@ -179,7 +244,12 @@ public class DrinkShopController {
 
     @FXML
     private void onAddNewReteta() {
-        Reteta r = new Reteta(service.getAllRetete().size()+1, new ArrayList<>(newRetetaList));
+        if (newRetetaList.isEmpty()) {
+            showError("Reteta trebuie sa contina cel putin un ingredient.");
+            return;
+        }
+
+        Reteta r = new Reteta(getNextRetetaId(), new ArrayList<>(newRetetaList));
         service.addReteta(r);
         newRetetaList.clear();
         initData();
@@ -222,6 +292,22 @@ public class DrinkShopController {
 
     @FXML
     private void onFinalizeOrder() {
+        if (currentOrderItems.isEmpty()) {
+            showError("Comanda curenta este goala.");
+            return;
+        }
+
+        try {
+            for (OrderItem item : currentOrderItems) {
+                for (int i = 0; i < item.getQuantity(); i++) {
+                    service.comandaProdus(item.getProduct());
+                }
+            }
+        } catch (IllegalStateException ex) {
+            showError(ex.getMessage());
+            return;
+        }
+
         currentOrder.getItems().clear();
         currentOrder.getItems().addAll(currentOrderItems);
         currentOrder.computeTotalPrice();
@@ -230,8 +316,9 @@ public class DrinkShopController {
         txtReceipt.setText(service.generateReceipt(currentOrder));
 
         currentOrderItems.clear();
-        currentOrder = new Order(currentOrder.getId() + 1);
+        currentOrder = new Order(getNextOrderId());
         updateOrderTotal();
+        onDailyRevenue();
     }
 
     private void updateOrderTotal() {
@@ -239,6 +326,20 @@ public class DrinkShopController {
         currentOrder.getItems().addAll(currentOrderItems);
         double total = service.computeTotal(currentOrder);
         lblOrderTotal.setText("Total: " + total);
+    }
+
+    private int getNextOrderId() {
+        return service.getAllOrders().stream()
+                .mapToInt(Order::getId)
+                .max()
+                .orElse(0) + 1;
+    }
+
+    private int getNextRetetaId() {
+        return service.getAllRetete().stream()
+                .mapToInt(Reteta::getId)
+                .max()
+                .orElse(0) + 1;
     }
 
     // ---------- EXPORT + REVENUE ----------
