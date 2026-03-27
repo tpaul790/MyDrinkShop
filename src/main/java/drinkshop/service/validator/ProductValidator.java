@@ -12,8 +12,8 @@ public class ProductValidator implements Validator<Product> {
         if (product.getId() <= 0)
             errors += "ID invalid!\n";
 
-        if (product.getNume() == null || product.getNume().isBlank())
-            errors += "Numele nu poate fi gol!\n";
+        if (product.getNume() == null || product.getNume().length() <= 2)
+            errors += "Numele trebuie sa contina cel putin 3 caractere!\n";
 
         if (product.getPret() <= 0)
             errors += "Pret invalid!\n";
