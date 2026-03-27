@@ -6,13 +6,11 @@ import drinkshop.domain.TipBautura;
 import drinkshop.repository.Repository;
 import drinkshop.repository.file.FileProductRepository;
 import drinkshop.service.validator.ValidationException;
-import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.DisplayName;
-import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.*;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.concurrent.TimeUnit;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -43,7 +41,9 @@ public class ProductServiceTest {
 
     // TC1
     @Test
+    @Tag("ECP")
     @DisplayName("TC1_ECP_VALID: Actualizare nume valid")
+    @Timeout(value = 1, unit = TimeUnit.SECONDS)
     void testUpdateNameValidECP() {
         // ARRANGE
         int id = 100;
@@ -60,6 +60,7 @@ public class ProductServiceTest {
 
     // TC2
     @Test
+    @Tag("ECP")
     @DisplayName("TC2_ECP_INVALID: Actualizare pret invalid")
     void testUpdatePriceInvalidECP() {
         // ARRANGE
@@ -83,6 +84,7 @@ public class ProductServiceTest {
 
     // TC3
     @Test
+    @Tag("ECP")
     @DisplayName("TC3_ECP_INVALID: Actualizare nume invalid")
     void testUpdateNameInvalidECP() {
         // ARRANGE
@@ -106,6 +108,7 @@ public class ProductServiceTest {
 
     // TC4
     @Test
+    @Tag("BVA")
     @DisplayName("TC1_BVA_VALID: Actualizare nume valid")
     void testUpdateNameValidBVA() {
         // ARRANGE
@@ -123,6 +126,7 @@ public class ProductServiceTest {
 
     // TC5
     @Test
+    @Tag("BVA")
     @DisplayName("TC2_BVA_INVALID: Actualizare nume invalid")
     void testUpdateNameInvalidBVA() {
         // ARRANGE
@@ -146,6 +150,7 @@ public class ProductServiceTest {
 
     // TC6
     @Test
+    @Tag("BVA")
     @DisplayName("TC4_BVA_VALID: Actualizare pret valid")
     void testUpdatePriceValidBVA() {
         // ARRANGE
@@ -163,6 +168,7 @@ public class ProductServiceTest {
 
     // TC7
     @Test
+    @Tag("BVA")
     @DisplayName("TC5_BVA_INVALID: Actualizare pret invalid")
     void testUpdatePriceInvalidBVA() {
         // ARRANGE
