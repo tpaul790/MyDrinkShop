@@ -56,6 +56,9 @@ public class ProductServiceTest {
         assertDoesNotThrow(() -> {
             productService.updateProduct(id, name, price, cat, tip);
         }, "Actualizarea ar trebui sa se execute fara erori.");
+
+        Product productUpdated = productService.findById(id);
+        assertEquals(name, productUpdated.getNume(), "Dupa actualizare, produsul ar trebui sa aiba numele actualizat");
     }
 
     // TC2
@@ -122,6 +125,9 @@ public class ProductServiceTest {
         assertDoesNotThrow(() -> {
             productService.updateProduct(id, name, price, cat, tip);
         }, "Actualizarea ar trebui sa se execute fara erori.");
+
+        Product productUpdated = productService.findById(id);
+        assertEquals(name, productUpdated.getNume(), "Dupa actualizare, produsul ar trebui sa aiba numele actualizat");
     }
 
     // TC5
@@ -164,6 +170,9 @@ public class ProductServiceTest {
         assertDoesNotThrow(() -> {
             productService.updateProduct(id, name, price, cat, tip);
         }, "Actualizarea ar trebui sa se execute fara erori.");
+
+        Product productUpdated = productService.findById(id);
+        assertEquals(price, productUpdated.getPret(), "Dupa actualizare, pretul produsului ar trebui sa fie actualizat");
     }
 
     // TC7
