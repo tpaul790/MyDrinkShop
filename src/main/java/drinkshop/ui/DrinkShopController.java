@@ -2,6 +2,7 @@ package drinkshop.ui;
 
 import drinkshop.domain.*;
 import drinkshop.service.DrinkShopService;
+import drinkshop.service.validator.ValidationException;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
@@ -131,10 +132,10 @@ public class DrinkShopController {
             return;
         }
 
-        if (txtProdName.getText() == null || txtProdName.getText().isBlank()) {
-            showError("Numele produsului este obligatoriu.");
-            return;
-        }
+//        if (txtProdName.getText() == null || txtProdName.getText().isBlank()) {
+//            showError("Numele produsului este obligatoriu.");
+//            return;
+//        }
         if (comboProdCategorie.getValue() == null || comboProdTip.getValue() == null) {
             showError("Categoria si tipul produsului sunt obligatorii.");
             return;
@@ -155,8 +156,15 @@ public class DrinkShopController {
                 comboProdCategorie.getValue(),
                 comboProdTip.getValue()
         );
-        service.addProduct(p);
-        initData();
+
+        // preluam erorile aruncate de validator din service
+        try {
+            service.addProduct(p);
+            initData();
+        }
+        catch (ValidationException e) {
+            showError(e.getMessage());
+        }
     }
 
     @FXML
@@ -167,10 +175,10 @@ public class DrinkShopController {
             return;
         }
 
-        if (txtProdName.getText() == null || txtProdName.getText().isBlank()) {
-            showError("Numele produsului este obligatoriu.");
-            return;
-        }
+//        if (txtProdName.getText() == null || txtProdName.getText().isBlank()) {
+//            showError("Numele produsului este obligatoriu.");
+//            return;
+//        }
         if (comboProdCategorie.getValue() == null || comboProdTip.getValue() == null) {
             showError("Categoria si tipul produsului sunt obligatorii.");
             return;
@@ -184,14 +192,20 @@ public class DrinkShopController {
             return;
         }
 
-        service.updateProduct(
-                selected.getId(),
-                txtProdName.getText().trim(),
-                price,
-                comboProdCategorie.getValue(),
-                comboProdTip.getValue()
-        );
-        initData();
+        // preluam erorile aruncate de validator din service
+        try {
+            service.updateProduct(
+                    selected.getId(),
+                    txtProdName.getText().trim(),
+                    price,
+                    comboProdCategorie.getValue(),
+                    comboProdTip.getValue()
+            );
+            initData();
+        }
+        catch (ValidationException e) {
+            showError(e.getMessage());
+        }
     }
 
     @FXML
