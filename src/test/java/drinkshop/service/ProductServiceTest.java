@@ -90,7 +90,7 @@ public class ProductServiceTest {
         // ARRANGE
         int id = 100;
         String name = "ca";
-        double price = 25.5;
+        double price = 25;
         CategorieBautura cat = CategorieBautura.CLASSIC_COFFEE;
         TipBautura tip = TipBautura.BASIC;
 
@@ -114,7 +114,7 @@ public class ProductServiceTest {
         // ARRANGE
         int id = 100;
         String name = "nou";
-        double price = 10;
+        double price = 25;
         CategorieBautura cat = CategorieBautura.CLASSIC_COFFEE;
         TipBautura tip = TipBautura.BASIC;
 
@@ -132,7 +132,7 @@ public class ProductServiceTest {
         // ARRANGE
         int id = 100;
         String name = "ca";
-        double price = 10;
+        double price = 25;
         CategorieBautura cat = CategorieBautura.CLASSIC_COFFEE;
         TipBautura tip = TipBautura.BASIC;
 
