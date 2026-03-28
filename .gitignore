@@ -20,5 +20,3 @@ buildNumber.properties
 *.iml
 out/
 gen/
-# folder with app data files
-data/
