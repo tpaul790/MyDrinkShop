@@ -40,27 +40,58 @@ public class OrderService {
         return orderRepo.findOne(id);
     }
 
+    /**
+     * Calculează totalul unei comenzi aplicând reguli de validare și discount.
+     *
+     * <p>Decizii (pentru analiza White-Box):</p>
+     * <ul>
+     *   <li>D1: order == null</li>
+     *   <li>D2: items == null || items.isEmpty()</li>
+     *   <li>D3: for-each item (structură repetitivă)</li>
+     *   <li>D4: item == null || item.getProduct() == null</li>
+     *   <li>D5: item.getQuantity() &lt;= 0</li>
+     *   <li>D6: product not found in repository</li>
+     *   <li>D7: total > 100 → discount 10%</li>
+     * </ul>
+     *
+     * @param o comanda pentru care se calculează totalul
+     * @return totalul comenzii (cu discount dacă este cazul)
+     */
     public double computeTotal(Order o) {
-        if (o == null || o.getItems() == null) {
+        if (o == null) {                                                          // D1
             return 0.0;
         }
 
-        return o.getItems().stream()
-                .mapToDouble(i -> {
-                    if (i == null || i.getProduct() == null) {
-                        throw new IllegalArgumentException("Order item invalid: produs lipsa.");
-                    }
-                    if (i.getQuantity() <= 0) {
-                        throw new IllegalArgumentException("Order item invalid: cantitate <= 0.");
-                    }
+        List<OrderItem> items = o.getItems();
+        if (items == null || items.isEmpty()) {                                   // D2
+            return 0.0;
+        }
 
-                    Product product = productRepo.findOne(i.getProduct().getId());
-                    if (product == null) {
-                        throw new IllegalArgumentException("Produs inexistent pentru id=" + i.getProduct().getId());
-                    }
-                    return product.getPret() * i.getQuantity();
-                })
-                .sum();
+        double total = 0.0;
+
+        for (OrderItem item : items) {                                            // D3 (structură repetitivă)s
+            if (item == null || item.getProduct() == null) {                      // D4
+                throw new IllegalArgumentException("Order item invalid: produs lipsa.");
+            }
+
+            if (item.getQuantity() <= 0) {                                       // D5
+                throw new IllegalArgumentException("Order item invalid: cantitate <= 0.");
+            }
+
+            Product product = productRepo.findOne(item.getProduct().getId());
+            if (product == null) {                                                // D6
+                throw new IllegalArgumentException(
+                        "Produs inexistent pentru id=" + item.getProduct().getId());
+            }
+
+            total += product.getPret() * item.getQuantity();
+        }
+
+        if (total > 100.0) {                                                     // D7 – discount volum 10%
+            total *= 0.9;
+        }
+
+        return total;
     }
 
     public void addItem(Order o, OrderItem item) {
