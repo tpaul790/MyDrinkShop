@@ -13,6 +13,11 @@ public class ProductService {
     private final Repository<Integer, Product> productRepo;
     private final Validator<Product> productValidator;
 
+    public ProductService(Repository<Integer, Product> productRepo, Validator<Product> productValidator) {
+        this.productRepo = productRepo;
+        this.productValidator = productValidator;
+    }
+
     public ProductService(Repository<Integer, Product> productRepo) {
         this.productRepo = productRepo;
         this.productValidator = new ProductValidator();
