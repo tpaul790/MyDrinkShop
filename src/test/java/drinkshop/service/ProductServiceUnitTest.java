@@ -10,10 +10,12 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.Mockito.*;
 
@@ -57,4 +59,33 @@ class ProductServiceUnitTest {
         verify(productRepository, never()).save(product);
     }
 
+    @DisplayName("Testare pentru actualizare produs valid")
+    @Test
+    void testUpdateProduct_Valid() {
+        ArgumentCaptor<Product> productCaptor = ArgumentCaptor.forClass(Product.class);
+
+        doNothing().when(productValidator).validate(any(Product.class)); // setam validatorul mock sa valideze produsul
+        productService.updateProduct(product.getId(), product.getNume(), product.getPret(), product.getCategorie(), product.getTip()); // apelam update-ul
+
+        verify(productValidator).validate(productCaptor.capture()); // verificam apelul de validare
+
+        // verificam pasarea corecta a argumentelor de catre service
+        Product productValidated = productCaptor.getValue();
+        assertEquals(1, productValidated.getId());
+        assertEquals("cafea", productValidated.getNume());
+        assertEquals(20.99, productValidated.getPret());
+        assertEquals(CategorieBautura.CLASSIC_COFFEE, productValidated.getCategorie());
+        assertEquals(TipBautura.BASIC, productValidated.getTip());
+
+        verify(productRepository, times(1)).update(any(Product.class)); // verificam apelarea metodei de update 1 singura data
+    }
+
+    @DisplayName("Testare pentru actualizare produs invalid")
+    @Test
+    void testUpdateProduct_Invalid() {
+        doThrow(new ValidationException("Eroare acutalizare produs")).when(productValidator).validate(any(Product.class));
+
+        assertThrows(ValidationException.class, () -> productService.updateProduct(product.getId(), product.getNume(), product.getPret(), product.getCategorie(), product.getTip())); // verificam aruncarea erorii
+        verify(productRepository, never()).update(any(Product.class)); // verificam ca obiectul nu a fost pasat mai departe catre repo
+    }
 }
